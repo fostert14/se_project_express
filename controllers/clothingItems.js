@@ -62,6 +62,46 @@ const deleteItem = (req, res) => {
     });
 };
 
+const likeItem = (req, res) => {
+  ClothingItem.findbyIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(() => {
+      const error = new Error("Item not found");
+      error.statusCode = NOT_FOUND;
+      throw error;
+    })
+    .then((item) => res.status(200).send(item))
+    .catch((err) => {
+      console.error(err);
+      res.status(err.statusCode || SERVER_ERROR).send({
+        message: err.message || "An error has occurred on the server",
+      });
+    });
+};
+
+const dislikeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } }, // Remove _id from the array
+    { new: true },
+  )
+    .orFail(() => {
+      const error = new Error("Item not found");
+      error.statusCode = NOT_FOUND;
+      throw error;
+    })
+    .then((item) => res.status(200).send(item))
+    .catch((err) => {
+      console.error(err);
+      res.status(err.statusCode || SERVER_ERROR).send({
+        message: err.message || "An error has occurred on the server",
+      });
+    });
+};
+
 // const updateItem = (req, res) => {
 //   const { itemId } = req.params;
 //   const { imageURL } = req.body;
@@ -78,4 +118,6 @@ module.exports = {
   createItem,
   getItems,
   deleteItem,
+  likeItem,
+  dislikeItem,
 };
