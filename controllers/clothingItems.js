@@ -51,11 +51,14 @@ const deleteItem = (req, res) => {
       error.statusCode = NOT_FOUND;
       throw error;
     })
-    .then((item) => res.status(204).send({}))
+    .then((item) => res.status(200).send({}))
     .catch((err) => {
       console.error(
         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
       );
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+      }
       res.status(err.statusCode || SERVER_ERROR).send({
         message: err.message || "An error has occurred on the server",
       });
@@ -75,6 +78,9 @@ const likeItem = (req, res) => {
     })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+      }
       console.error(err);
       res.status(err.statusCode || SERVER_ERROR).send({
         message: err.message || "An error has occurred on the server",
@@ -95,6 +101,9 @@ const dislikeItem = (req, res) => {
     })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+      }
       console.error(err);
       res.status(err.statusCode || SERVER_ERROR).send({
         message: err.message || "An error has occurred on the server",
