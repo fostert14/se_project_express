@@ -6,10 +6,10 @@ const createItem = (req, res) => {
   console.log(req.user._id);
   console.log(req.body);
 
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageURL, owner })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
@@ -63,7 +63,7 @@ const deleteItem = (req, res) => {
 };
 
 const likeItem = (req, res) => {
-  ClothingItem.findbyIdAndUpdate(
+  ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
