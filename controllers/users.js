@@ -79,7 +79,7 @@ const getUser = (req, res) => {
     });
 };
 
-const userLogin = (req, res) => {
+const login = (req, res) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -97,4 +97,5 @@ module.exports = {
   createUser,
   getUsers,
   getUser,
+  login,
 };
