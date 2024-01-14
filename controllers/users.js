@@ -6,6 +6,7 @@ const {
   SERVER_ERROR,
   DUPLICATE_ERROR,
 } = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res) => {
   console.log(req.body);
@@ -75,6 +76,20 @@ const getUser = (req, res) => {
       return res.status(err.statusCode || SERVER_ERROR).send({
         message: err.message || "An error has occurred on the server",
       });
+    });
+};
+
+const userLogin = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.send({
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" }),
+      });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
     });
 };
 
