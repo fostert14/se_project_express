@@ -1,22 +1,36 @@
 const User = require("../models/users");
-const { INVALID_DATA, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const bcrypt = require("bcryptjs");
+const {
+  INVALID_DATA,
+  NOT_FOUND,
+  SERVER_ERROR,
+  DUPLICATE_ERROR,
+} = require("../utils/errors");
 
 const createUser = (req, res) => {
   console.log(req.body);
 
-  const { name, avatar } = req.body;
+  const { name, avatar, email, password } = req.body;
+  bcrypt
+    .hash(password, 10)
 
-  User.create({ name, avatar })
-    .then((user) => {
-      console.log(user);
-      res.send({ data: user });
-    })
+    .then((hash) =>
+      User.create({ name, avatar, email, password: hash }).then((user) => {
+        console.log(user);
+        res.send({ data: user });
+      }),
+    )
+
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
         return res
           .status(INVALID_DATA)
           .send({ message: "Invalid data passed" });
+      } else if (err.code === 11000) {
+        return res
+          .status(DUPLICATE_ERROR)
+          .send({ message: "This email is already being used" });
       }
       return res
         .status(SERVER_ERROR)
