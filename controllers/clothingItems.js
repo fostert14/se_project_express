@@ -17,7 +17,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         res.status(INVALID_DATA).send({ message: "Invalid data passed" });
       } else {
-        res
+        return res
           .status(SERVER_ERROR)
           .send({ message: "An error has occurred on the server" });
       }
@@ -62,12 +62,14 @@ const deleteItem = (req, res) => {
           .status(200)
           .send({ message: "Item deleted successfully", item: deletedItem });
       } else {
-        res.status(NOT_FOUND).send({ message: "Item not found" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
     })
     .catch((err) => {
       console.error(err);
-      res.status(SERVER_ERROR).send({ message: "Internal server error" });
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "Internal server error" });
     });
 };
 

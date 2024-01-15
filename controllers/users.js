@@ -32,7 +32,7 @@ const createUser = (req, res) => {
           .send({ message: "Invalid data passed" });
       } else if (err.code === 11000) {
         return res
-          .status(409)
+          .status(DUPLICATE_ERROR)
           .send({ message: "This email is already being used" });
       }
       return res
