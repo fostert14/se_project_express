@@ -1,11 +1,9 @@
+const { default: mongoose, mongo } = require("mongoose");
 const ClothingItem = require("../models/clothingItems");
 const { INVALID_DATA, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const { isValidObjectId } = mongoose;
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.user._id);
-  console.log(req.body);
-
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
@@ -17,13 +15,12 @@ const createItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid data passed" });
+        res.status(INVALID_DATA).send({ message: "Invalid data passed" });
+      } else {
+        res
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -34,7 +31,7 @@ const getItems = (req, res) => {
       console.error(
         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
       );
-      res
+      return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
@@ -43,17 +40,19 @@ const getItems = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  console.log(itemId);
+  if (!isValidObjectId(itemId)) {
+    return res.status(400).send({ message: "Invalid ID format" });
+  }
 
   ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).send({ message: "Item not found " });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
       if (item.owner.toString() !== req.user._id) {
         return res
           .status(403)
-          .send({ message: "Forbidden to delete this item " });
+          .send({ message: "Forbidden to delete this item" });
       }
       return ClothingItem.findByIdAndDelete(itemId);
     })
@@ -62,6 +61,8 @@ const deleteItem = (req, res) => {
         res
           .status(200)
           .send({ message: "Item deleted successfully", item: deletedItem });
+      } else {
+        res.status(NOT_FOUND).send({ message: "Item not found" });
       }
     })
     .catch((err) => {

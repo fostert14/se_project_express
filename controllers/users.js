@@ -7,6 +7,7 @@ const {
   DUPLICATE_ERROR,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const jwt = require("jsonwebtoken");
 
 const createUser = (req, res) => {
   console.log(req.body);
@@ -121,11 +122,16 @@ const updateCurrentUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  return User.findUserByCredentials(email, password)
+  if (!email || !password) {
+    return res.status(400).send({ message: "Email and password are required" });
+  }
+
+  User.findUserByCredentials(email, password)
     .then((user) => {
-      res.send({
-        token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" }),
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
       });
+      res.send({ token });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });
