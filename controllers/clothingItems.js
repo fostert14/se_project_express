@@ -1,6 +1,7 @@
-const { default: mongoose, mongo } = require("mongoose");
+const { default: mongoose } = require("mongoose");
 const ClothingItem = require("../models/clothingItems");
 const { INVALID_DATA, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+
 const { isValidObjectId } = mongoose;
 
 const createItem = (req, res) => {
@@ -10,28 +11,31 @@ const createItem = (req, res) => {
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       console.log(item);
-      res.send({ data: item });
+      return res.send({ data: item });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        res.status(INVALID_DATA).send({ message: "Invalid data passed" });
-      } else {
         return res
-          .status(SERVER_ERROR)
-          .send({ message: "An error has occurred on the server" });
+          .status(INVALID_DATA)
+          .send({ message: "Invalid data passed" });
       }
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
+    .then((items) => {
+      res.status(200).send(items);
+    })
     .catch((err) => {
       console.error(
         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
       );
-      return res
+      res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
@@ -44,7 +48,7 @@ const deleteItem = (req, res) => {
     return res.status(400).send({ message: "Invalid ID format" });
   }
 
-  ClothingItem.findById(itemId)
+  return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
@@ -58,12 +62,11 @@ const deleteItem = (req, res) => {
     })
     .then((deletedItem) => {
       if (deletedItem) {
-        res
+        return res
           .status(200)
           .send({ message: "Item deleted successfully", item: deletedItem });
-      } else {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
     })
     .catch((err) => {
       console.error(err);

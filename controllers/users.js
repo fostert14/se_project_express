@@ -1,5 +1,6 @@
-const User = require("../models/users");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/users");
 const {
   INVALID_DATA,
   NOT_FOUND,
@@ -7,7 +8,6 @@ const {
   DUPLICATE_ERROR,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
-const jwt = require("jsonwebtoken");
 
 const createUser = (req, res) => {
   console.log(req.body);
@@ -30,7 +30,8 @@ const createUser = (req, res) => {
         return res
           .status(INVALID_DATA)
           .send({ message: "Invalid data passed" });
-      } else if (err.code === 11000) {
+      }
+      if (err.code === 11000) {
         return res
           .status(DUPLICATE_ERROR)
           .send({ message: "This email is already being used" });
@@ -51,6 +52,7 @@ const getCurrentUser = (req, res) => {
       }
     })
     .catch((err) => {
+      console.error(err);
       res.status(SERVER_ERROR).send({ message: "Internal server error" });
     });
 };
@@ -68,7 +70,7 @@ const updateCurrentUser = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -126,7 +128,7 @@ const login = (req, res) => {
     return res.status(400).send({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
