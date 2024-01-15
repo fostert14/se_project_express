@@ -44,13 +44,13 @@ const getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: "User not found" });
+        res.status(NOT_FOUND).send({ message: "User not found" });
       } else {
         res.status(200).send(user);
       }
     })
     .catch((err) => {
-      res.status(500).send({ message: "Internal server error" });
+      res.status(SERVER_ERROR).send({ message: "Internal server error" });
     });
 };
 
@@ -65,15 +65,15 @@ const updateCurrentUser = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(400).send({ message: "Invalid data passed" });
+        res.status(INVALID_DATA).send({ message: "Invalid data passed" });
       } else {
-        res.status(500).send({ message: "Internal server error" });
+        res.status(SERVER_ERROR).send({ message: "Internal server error" });
       }
     });
 };
