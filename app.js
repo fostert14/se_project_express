@@ -18,12 +18,6 @@ mongoose.connect(
 const routes = require("./routes");
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: "657a86c5da8cc73dc614834f",
-  };
-  next();
-});
 app.use(helmet());
 app.disable("x-powered-by");
 
