@@ -17,8 +17,9 @@ const createUser = (req, res) => {
 
     .then((hash) =>
       User.create({ name, avatar, email, password: hash }).then((user) => {
-        console.log(user);
-        res.send({ data: user });
+        const userObj = user.toObject();
+        delete userObj.password;
+        res.send({ data: userObj });
       }),
     )
 
@@ -30,7 +31,7 @@ const createUser = (req, res) => {
           .send({ message: "Invalid data passed" });
       } else if (err.code === 11000) {
         return res
-          .status(DUPLICATE_ERROR)
+          .status(409)
           .send({ message: "This email is already being used" });
       }
       return res
