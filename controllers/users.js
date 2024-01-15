@@ -7,6 +7,7 @@ const {
   DUPLICATE_ERROR,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const User = require("../models/users");
 
 const createUser = (req, res) => {
   console.log(req.body);
@@ -36,6 +37,20 @@ const createUser = (req, res) => {
       return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
+    });
+};
+
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: "User not found" });
+      } else {
+        res.status(200).send(user);
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({ message: "Internal server error" });
     });
 };
 
@@ -98,4 +113,5 @@ module.exports = {
   getUsers,
   getUser,
   login,
+  getCurrentUser,
 };
