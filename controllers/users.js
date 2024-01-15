@@ -54,45 +54,69 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((items) => res.send(items))
-    .catch((err) => {
-      console.error(
-        `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
-      );
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
+const updateCurrentUser = (req, res) => {
+  const updates = {};
+  if (req.body.name) updates.name = req.body.name;
+  if (req.body.avatar) updates.avatar = req.body.avatar;
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  console.log(userId);
-
-  User.findById(userId)
-    .orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
-    })
+  User.findByIdAndUpdate(req.user._id, updates, {
+    new: true,
+    runValidators: true,
+  })
     .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: "User not found" });
+      }
       res.status(200).send(user);
     })
     .catch((err) => {
-      console.error(
-        `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
-      );
-      if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+      if (err.name === "ValidationError") {
+        res.status(400).send({ message: "Invalid data passed" });
+      } else {
+        res.status(500).send({ message: "Internal server error" });
       }
-      return res.status(err.statusCode || SERVER_ERROR).send({
-        message: err.message || "An error has occurred on the server",
-      });
     });
 };
+
+// const getUsers = (req, res) => {
+//   User.find({})
+//     .then((items) => res.send(items))
+//     .catch((err) => {
+//       console.error(
+//         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
+//       );
+//       res
+//         .status(SERVER_ERROR)
+//         .send({ message: "An error has occurred on the server" });
+//     });
+// };
+
+// const getUser = (req, res) => {
+//   const { userId } = req.params;
+
+//   console.log(userId);
+
+//   User.findById(userId)
+//     .orFail(() => {
+//       const error = new Error("User not found");
+//       error.statusCode = NOT_FOUND;
+//       throw error;
+//     })
+//     .then((user) => {
+//       res.status(200).send(user);
+//     })
+//     .catch((err) => {
+//       console.error(
+//         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
+//       );
+//       if (err.name === "CastError") {
+//         return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+//       }
+//       return res.status(err.statusCode || SERVER_ERROR).send({
+//         message: err.message || "An error has occurred on the server",
+//       });
+//     });
+// };
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -110,8 +134,7 @@ const login = (req, res) => {
 
 module.exports = {
   createUser,
-  getUsers,
-  getUser,
   login,
   getCurrentUser,
+  updateCurrentUser,
 };
