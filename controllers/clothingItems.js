@@ -29,7 +29,7 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => {
-      res.status(200).send(items);
+      res.send(items);
     })
     .catch((err) => {
       console.error(
@@ -45,21 +45,10 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!isValidObjectId(itemId)) {
-    return res.status(400).send({ message: "Invalid ID format" });
+    return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
   }
 
   return ClothingItem.findById(itemId)
-    .then((item) => {
-      if (!item) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
-      }
-      if (item.owner.toString() !== req.user._id) {
-        return res
-          .status(403)
-          .send({ message: "Forbidden to delete this item" });
-      }
-      return ClothingItem.findByIdAndDelete(itemId);
-    })
     .then((deletedItem) => {
       if (deletedItem) {
         return res
@@ -68,6 +57,17 @@ const deleteItem = (req, res) => {
       }
       return res.status(NOT_FOUND).send({ message: "Item not found" });
     })
+    .then((item) => {
+      if (!item) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(UNAUTHORIZED_USER)
+          .send({ message: "Forbidden to delete this item" });
+      }
+      return ClothingItem.findByIdAndDelete(itemId);
+    })
     .catch((err) => {
       console.error(err);
       return res
@@ -75,26 +75,6 @@ const deleteItem = (req, res) => {
         .send({ message: "Internal server error" });
     });
 };
-
-// OLD DELETE FUNCITONALITY
-// ClothingItem.findByIdAndDelete(itemId)
-//   .orFail(() => {
-//     const error = new Error("Item not found");
-//     error.statusCode = NOT_FOUND;
-//     throw error;
-//   })
-//   .then((item) => res.status(200).send({ item }))
-//   .catch((err) => {
-//     console.error(
-//       `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
-//     );
-//     if (err.name === "CastError") {
-//       return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
-//     }
-//     return res.status(err.statusCode || SERVER_ERROR).send({
-//       message: err.message || "An error has occurred on the server",
-//     });
-//   });
 
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
