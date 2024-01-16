@@ -14,7 +14,7 @@ router.post("/", auth, createItem);
 
 // Read
 
-router.get("/", auth, getItems);
+router.get("/", getItems);
 
 // Delete
 

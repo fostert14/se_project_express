@@ -12,7 +12,7 @@ router.use((req, res, next) => {
   next(error);
 });
 
-router.use((err, req, res) => {
+router.use((err, req, res, next) => {
   console.error(err);
   const status = err.statusCode || SERVER_ERROR;
   const message = err.message || "An error has occurred on the server";
