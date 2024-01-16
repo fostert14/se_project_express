@@ -6,6 +6,7 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
   DUPLICATE_ERROR,
+  INVALID_CREDENTIALS,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -81,51 +82,13 @@ const updateCurrentUser = (req, res) => {
     });
 };
 
-// const getUsers = (req, res) => {
-//   User.find({})
-//     .then((items) => res.send(items))
-//     .catch((err) => {
-//       console.error(
-//         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
-//       );
-//       res
-//         .status(SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server" });
-//     });
-// };
-
-// const getUser = (req, res) => {
-//   const { userId } = req.params;
-
-//   console.log(userId);
-
-//   User.findById(userId)
-//     .orFail(() => {
-//       const error = new Error("User not found");
-//       error.statusCode = NOT_FOUND;
-//       throw error;
-//     })
-//     .then((user) => {
-//       res.status(200).send(user);
-//     })
-//     .catch((err) => {
-//       console.error(
-//         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
-//       );
-//       if (err.name === "CastError") {
-//         return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
-//       }
-//       return res.status(err.statusCode || SERVER_ERROR).send({
-//         message: err.message || "An error has occurred on the server",
-//       });
-//     });
-// };
-
 const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).send({ message: "Email and password are required" });
+    return res
+      .status(INVALID_DATA)
+      .send({ message: "Email and password are required" });
   }
 
   return User.findUserByCredentials(email, password)
@@ -136,7 +99,13 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      if (err.message === "Incorrect email or password") {
+        return res.status(INVALID_CREDENTIALS).send({ message: err.message });
+      }
+      console.err(err);
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 

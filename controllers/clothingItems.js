@@ -1,6 +1,11 @@
 const { default: mongoose } = require("mongoose");
 const ClothingItem = require("../models/clothingItems");
-const { INVALID_DATA, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const {
+  INVALID_DATA,
+  NOT_FOUND,
+  SERVER_ERROR,
+  UNAUTHORIZED_USER,
+} = require("../utils/errors");
 
 const { isValidObjectId } = mongoose;
 
@@ -102,7 +107,7 @@ const likeItem = (req, res) => {
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } }, // Remove _id from the array
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .orFail(() => {
