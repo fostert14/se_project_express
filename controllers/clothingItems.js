@@ -63,15 +63,14 @@ const deleteItem = (req, res) => {
           .status(UNAUTHORIZED_USER)
           .send({ message: "Forbidden to delete this item" });
       }
-      return ClothingItem.findByIdAndDelete(itemId);
-    })
-    .then((deletedItem) => {
-      if (deletedItem) {
-        return res
-          .status(200)
-          .send({ message: "Item deleted successfully", item: deletedItem });
-      }
-      return res.status(NOT_FOUND).send({ message: "Item not found" });
+      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+        if (deletedItem) {
+          return res
+            .status(200)
+            .send({ message: "Item deleted successfully", item: deletedItem });
+        }
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      });
     })
     .catch((err) => {
       console.error(err);
