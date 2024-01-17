@@ -17,6 +17,7 @@ router.use((err, req, res, next) => {
   const status = err.statusCode || SERVER_ERROR;
   const message = err.message || "An error has occurred on the server";
   res.status(status).send({ message });
+  next();
 });
 
 module.exports = router;
