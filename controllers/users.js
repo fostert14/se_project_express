@@ -11,8 +11,6 @@ const {
 const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res) => {
-  console.log(req.body);
-
   const { name, avatar, email, password } = req.body;
   bcrypt
     .hash(password, 10)
@@ -21,7 +19,10 @@ const createUser = (req, res) => {
       User.create({ name, avatar, email, password: hash }).then((user) => {
         const userObj = user.toObject();
         delete userObj.password;
-        res.send({ data: userObj });
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        res.send({ data: userObj, token });
       }),
     )
 
