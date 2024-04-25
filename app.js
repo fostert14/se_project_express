@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cors = require("cors");
+const { errors } = require("celebrate");
 
 const { PORT = 3001 } = process.env;
 const app = express();
@@ -19,16 +20,22 @@ mongoose.connect(
 );
 
 const routes = require("./routes");
+const {
+  validateUserInfoCreation,
+  validateUserLogin,
+} = require("./middlewares/validation");
 
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.disable("x-powered-by");
 
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.post("/signin", validateUserLogin, login);
+app.post("/signup", validateUserInfoCreation, createUser);
 
 app.use(routes);
+
+app.use(errors());
 
 app.use(errorHandler);
 
