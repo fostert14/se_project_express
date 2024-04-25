@@ -1,10 +1,9 @@
 const { default: mongoose } = require("mongoose");
 const ClothingItem = require("../models/clothingItems");
 const {
-  INVALID_DATA,
-  NOT_FOUND,
-  SERVER_ERROR,
-  UNAUTHORIZED_USER,
+  NotFoundError,
+  BadRequestError,
+  UnauthorizedError,
 } = require("../utils/errors");
 
 const { isValidObjectId } = mongoose;
@@ -21,13 +20,10 @@ const createItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid data passed" });
+        next(new BadRequestError("Invalid data passed"));
+      } else {
+        next(err);
       }
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -40,9 +36,7 @@ const getItems = (req, res) => {
       console.error(
         `Error ${err.name} with the message ${err.message} has occurred while executing the code`,
       );
-      res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
+      next(err);
     });
 };
 
@@ -50,18 +44,16 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!isValidObjectId(itemId)) {
-    return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+    next(new BadRequestError("Invalid ID Format"));
   }
 
   return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        next(new NotFoundError("Item Not Found"));
       }
       if (item.owner.toString() !== req.user._id) {
-        return res
-          .status(UNAUTHORIZED_USER)
-          .send({ message: "Forbidden to delete this item" });
+        next(new UnauthorizedError("Forbidden to delete this item"));
       }
       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
         if (deletedItem) {
@@ -69,14 +61,12 @@ const deleteItem = (req, res) => {
             .status(200)
             .send({ message: "Item deleted successfully", item: deletedItem });
         }
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        next(new NotFoundError("Item not found"));
       });
     })
     .catch((err) => {
       console.error(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "Internal server error" });
+      next(err);
     });
 };
 
@@ -87,19 +77,15 @@ const likeItem = (req, res) => {
     { new: true },
   )
     .orFail(() => {
-      const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Item Not Found");
     })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+        next(new BadRequestError("Invalid ID Format"));
       }
       console.error(err);
-      return res.status(err.statusCode || SERVER_ERROR).send({
-        message: err.message || "An error has occurred on the server",
-      });
+      next(err);
     });
 };
 
@@ -110,19 +96,15 @@ const dislikeItem = (req, res) => {
     { new: true },
   )
     .orFail(() => {
-      const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Item not found");
     })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid ID format" });
+        next(new BadRequestError("Invalid ID Format"));
       }
       console.error(err);
-      return res.status(err.statusCode || SERVER_ERROR).send({
-        message: err.message || "An error has occurred on the server",
-      });
+      next(err);
     });
 };
 

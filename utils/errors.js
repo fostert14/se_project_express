@@ -1,15 +1,47 @@
-const INVALID_DATA = 400;
-const INVALID_CREDENTIALS = 401;
-const UNAUTHORIZED_USER = 403;
-const NOT_FOUND = 404;
-const SERVER_ERROR = 500;
-const DUPLICATE_ERROR = 409;
+class BadRequestError extends Error {
+  constructor(message = "Bad Request") {
+    super(message);
+    this.statusCode = 400;
+    this.name = "BadRequestError";
+  }
+}
+
+class UnauthorizedError extends Error {
+  constructor(message = "Unauthorized") {
+    super(message);
+    this.statusCode = 401;
+    this.name = "UnauthorizedError";
+  }
+}
+
+class ForbiddenError extends Error {
+  constructor(message = "Forbidden") {
+    super(message);
+    this.statusCode = 403;
+    this.name = "ForbiddenError";
+  }
+}
+
+class NotFoundError extends Error {
+  constructor(message = "Not Found") {
+    super(message);
+    this.statusCode = 404;
+    this.name = "NotFoundError";
+  }
+}
+
+class ConflictError extends Error {
+  constructor(message = "Conflict") {
+    super(message);
+    this.statusCode = 409;
+    this.name = "ConflictError";
+  }
+}
 
 module.exports = {
-  INVALID_DATA,
-  NOT_FOUND,
-  SERVER_ERROR,
-  DUPLICATE_ERROR,
-  UNAUTHORIZED_USER,
-  INVALID_CREDENTIALS,
+  NotFoundError,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  ConflictError,
 };

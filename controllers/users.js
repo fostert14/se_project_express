@@ -2,11 +2,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
 const {
-  INVALID_DATA,
-  NOT_FOUND,
-  SERVER_ERROR,
-  DUPLICATE_ERROR,
-  INVALID_CREDENTIALS,
+  NotFoundError,
+  BadRequestError,
+  UnauthorizedError,
+  ConflictError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -29,37 +28,27 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid data passed" });
+        next(new BadRequestError("Invalid data passed"));
+      } else if (err.code === 11000) {
+        next(new ConflictError("This email is already being used"));
+      } else {
+        next(err);
       }
-      if (err.code === 11000) {
-        return res
-          .status(DUPLICATE_ERROR)
-          .send({ message: "This email is already being used" });
-      }
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: "User not found" });
-      } else {
-        res.status(200).send(user);
+        throw new NotFoundError("User not found");
       }
+      res.send(user);
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(SERVER_ERROR).send({ message: "Internal server error" });
-    });
+    .catch(next);
 };
 
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const updates = {};
   if (req.body.name) updates.name = req.body.name;
   if (req.body.avatar) updates.avatar = req.body.avatar;
@@ -70,29 +59,22 @@ const updateCurrentUser = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
+        throw new NotFoundError("User not found");
       }
-      return res.status(200).send(user);
+      res.send(user);
     })
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        res.status(INVALID_DATA).send({ message: "Invalid data passed" });
-      } else {
-        res.status(SERVER_ERROR).send({ message: "Internal server error" });
-      }
-    });
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(INVALID_DATA)
-      .send({ message: "Email and password are required" });
+    next(new BadRequestError("Email and password are required"));
+    return;
   }
 
-  return User.findUserByCredentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -101,12 +83,10 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res.status(INVALID_CREDENTIALS).send({ message: err.message });
+        next(new UnauthorizedError(err.message));
+      } else {
+        next(new Error("An error occurred while trying to login"));
       }
-      console.err(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
