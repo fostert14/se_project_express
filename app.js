@@ -8,6 +8,7 @@ const { PORT = 3001 } = process.env;
 const app = express();
 
 const { login, createUser } = require("./controllers/users");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const errorHandler = require("./middlewares/errors");
 
@@ -33,7 +34,10 @@ app.disable("x-powered-by");
 app.post("/signin", validateUserLogin, login);
 app.post("/signup", validateUserInfoCreation, createUser);
 
+app.use(requestLogger);
 app.use(routes);
+
+app.use(errorLogger);
 
 app.use(errors());
 
