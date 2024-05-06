@@ -27,9 +27,9 @@ const {
   validateUserLogin,
 } = require("./middlewares/validation");
 
-app.use(cors());
 app.use(express.json());
 app.use(helmet());
+app.use(cors());
 app.disable("x-powered-by");
 
 app.get("/crash-test", () => {
