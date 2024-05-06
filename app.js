@@ -29,7 +29,11 @@ const {
 
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://fosterwtwr.crabdance.com",
+  }),
+);
 app.disable("x-powered-by");
 
 app.get("/crash-test", () => {
