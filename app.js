@@ -1,4 +1,5 @@
 require("dotenv").config();
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
 const express = require("express");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
@@ -27,13 +28,9 @@ const {
   validateUserLogin,
 } = require("./middlewares/validation");
 
+app.use(cors());
 app.use(express.json());
 app.use(helmet());
-app.use(
-  cors({
-    origin: "https://fosterwtwr.crabdance.com",
-  }),
-);
 app.disable("x-powered-by");
 
 app.get("/crash-test", () => {
