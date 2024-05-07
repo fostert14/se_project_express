@@ -40,10 +40,10 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
+app.use(requestLogger);
 app.post("/signin", validateUserLogin, login);
 app.post("/signup", validateUserInfoCreation, createUser);
 
-app.use(requestLogger);
 app.use(routes);
 
 app.use(errorLogger);
