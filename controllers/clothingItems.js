@@ -1,10 +1,8 @@
 const { default: mongoose } = require("mongoose");
 const ClothingItem = require("../models/clothingItems");
-const {
-  NotFoundError,
-  BadRequestError,
-  UnauthorizedError,
-} = require("../utils/errors");
+const NotFoundError = require("../utils/errors/NotFoundError");
+const BadRequestError = require("../utils/errors/BadRequestError");
+const ForbiddenError = require("../utils/errors/ForbiddenError");
 
 const { isValidObjectId } = mongoose;
 
@@ -50,10 +48,10 @@ const deleteItem = (req, res, next) => {
   return ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        next(new NotFoundError("Item Not Found"));
+        return next(new NotFoundError("Item Not Found"));
       }
       if (item.owner.toString() !== req.user._id) {
-        next(new UnauthorizedError("Forbidden to delete this item"));
+        return next(new ForbiddenError("Forbidden to delete this item"));
       }
       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
         if (deletedItem) {
@@ -61,7 +59,7 @@ const deleteItem = (req, res, next) => {
             .status(200)
             .send({ message: "Item deleted successfully", item: deletedItem });
         }
-        next(new NotFoundError("Item not found"));
+        return next(new NotFoundError("Item not found"));
       });
     })
     .catch((err) => {
