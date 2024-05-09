@@ -34,12 +34,6 @@ app.use(express.json());
 app.use(helmet());
 app.disable("x-powered-by");
 
-app.get("/crash-test", () => {
-  setTimeout(() => {
-    throw new Error("Server will crash now");
-  }, 0);
-});
-
 app.use(requestLogger);
 app.post("/signin", validateUserLogin, login);
 app.post("/signup", validateUserInfoCreation, createUser);

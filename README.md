@@ -2,7 +2,7 @@
 
 ## Description
 
-This project is a Node.js-based web application designed to manage clothing items. It offers a RESTful API that allows users to perform a variety of operations related to clothing items, such as creating, viewing, liking, and disliking items, as well as managing user profiles. The application serves as a backend platform, providing a robust API for front-end applications to interact with.
+This project is a Node.js-based web application designed to manage clothing items. It offers a RESTful API that allows users to perform a variety of operations related to clothing items, such as creating, viewing, liking, and disliking items, as well as managing user profiles. The application serves as a backend platform, providing a robust API for front-end applications to interact with. This project now fully runs on a vm with a domain name connected to the api.
 
 ## Functionality
 
@@ -34,7 +34,3 @@ fosterwtwr.crabdance.com
 www.fosterwtwr.crabdance.com
 **Back End**:
 api.fosterwtwr.crabdance.com
-
-### Testing
-
-Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
